@@ -5,8 +5,9 @@
 <title>Talking Tune</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+<link href="css/bootstrap.min.css" rel="stylesheet">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="jquery-ui/jquery-ui.min.css">
 <link rel="stylesheet" href="css/style.css">
 
@@ -17,16 +18,20 @@
 <button id="rec-btn" type="button">
   <span class="visually-hidden">Grabar</span>
 </button>
+
 <div id="scene">
   <div id="background" aria-hidden="true"></div>
   <img id="cat" src="assets/zeh/cat_zeh0000.png" alt="Gato animado">
 </div>
+
 <button id="milk-btn" class="btn btn-primary">
     <span class="visually-hidden">Leche</span>
 </button>
+
 <button type="button" id="options-btn" class="btn btn-secondary position-absolute top-0 start-0 m-2"
         aria-label="Abrir opciones">
 </button>
+
 <div id="options-window" title="Opciones" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="options-window-title">
   <div class="options-header">
     <h1 id="options-window-title">Opciones</h1>
@@ -41,11 +46,13 @@
     </section>
   </form>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/ccapture.js@1.1.0/build/CCapture.all.min.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="bootstrap/bootstrap.bundle.min.js"></script>
+
 <script src="js/app.js"></script>
 <script src="js/options.js"></script>
+
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -55,7 +62,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-
 </body>
 </html>
-

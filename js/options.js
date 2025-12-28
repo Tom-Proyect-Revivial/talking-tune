@@ -19,10 +19,26 @@ $(document).ready(function() {
         $("#options-window").dialog("open");
     });
 
-    $('#embed-html-btn').click(function(){
-        let embedCode = `<iframe src="https://tom.ar.nf/talking-tune/index.php" width="500" height="600" style="border:none;"></iframe>`;
-        $('#embed-html-output').val(embedCode);
-    });
+$('#embed-html-btn').on('click', () => {
+    const src = location.origin + location.pathname;
+
+    const html = `
+<figure class="talking-tune-embed">
+  <iframe
+    src="${src}"
+    title="Talking Tune"
+    loading="lazy"
+    allow="microphone"
+    style="border:0; width:100%; height:480px;"
+  ></iframe>
+  <figcaption class="visually-hidden">
+    Talking Tune – gato interactivo
+  </figcaption>
+</figure>`.trim();
+
+    $('#embed-html-output').val(html);
+});
+
 
     $('#options-form').submit(function(e){
         e.preventDefault();
