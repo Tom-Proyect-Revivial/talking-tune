@@ -29,12 +29,12 @@
 </button>
 <div id="options-window" title="Opciones" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="options-window-title">
   <div class="options-header">
-    <h2 id="options-window-title">Opciones</h2>
+    <h1 id="options-window-title">Opciones</h1>
   </div>
   
   <form id="options-form">
     <section class="option-group mb-3">
-      <h1>Embebible</h1>
+      <h2>Embebible</h2>
       <button type="button" id="embed-html-btn" class="btn btn-outline-primary w-100" aria-label="Generar HTML embebible">Generar HTML embebible</button>
       <label for="embed-html-output" class="visually-hidden">Código HTML embebible</label>
       <textarea id="embed-html-output" readonly class="form-control mt-2" rows="3"></textarea>

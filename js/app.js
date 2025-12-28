@@ -12,13 +12,19 @@ let mediaRecorder = null;
 let recordedChunks = [];
 let isRecording = false;
 
+/* -------------------------------------------------
+   CANVAS PARA GRABACIÓN
+------------------------------------------------- */
 const canvas = document.createElement('canvas');
 canvas.width = scene.offsetWidth;
 canvas.height = scene.offsetHeight;
-canvas.style.display = 'none';
+canvas.classList.add('hidden-capture-canvas');
 document.body.appendChild(canvas);
 const ctx = canvas.getContext('2d');
 
+/* -------------------------------------------------
+   UTILIDADES
+------------------------------------------------- */
 function setCatFrame(folder, prefix, frame) {
     cat.src = `assets/${folder}/${prefix}${String(frame).padStart(4, '0')}.png`;
 }
@@ -38,8 +44,12 @@ function playSound(file) {
     new Audio(`assets/sounds/${file}`).play();
 }
 
+/* -------------------------------------------------
+   LECHE
+------------------------------------------------- */
 milkBtn.addEventListener('click', () => {
     if (isBusy || isDrinking) return;
+
     clearIntervalSafe();
     isBusy = true;
     isDrinking = true;
@@ -49,6 +59,7 @@ milkBtn.addEventListener('click', () => {
 function playMilkAnimation(onFinish) {
     let frame = 0;
     const maxFrames = 80;
+
     playSound('pour_milk_11025.wav');
     setTimeout(() => playSound('p_drink_milk_11025.wav'), 500);
 
@@ -58,12 +69,15 @@ function playMilkAnimation(onFinish) {
             clearIntervalSafe();
             isDrinking = false;
             setIdle();
-            setTimeout(() => isBusy = false, 500);
+            setTimeout(() => isBusy = false, 400);
             if (onFinish) onFinish();
         }
     }, 60);
 }
 
+/* -------------------------------------------------
+   BOTÓN SCRATCH
+------------------------------------------------- */
 const scratchBtn = document.createElement('button');
 scratchBtn.id = 'scratch-btn';
 scratchBtn.classList.add('btn-scratch');
@@ -71,6 +85,7 @@ scene.appendChild(scratchBtn);
 
 scratchBtn.addEventListener('click', () => {
     if (isBusy) return;
+
     clearIntervalSafe();
     isBusy = true;
     playScratchAnimation();
@@ -79,33 +94,62 @@ scratchBtn.addEventListener('click', () => {
 function playScratchAnimation(onFinish) {
     let frame = 0;
     const maxFrames = 55;
-    const folder = 'cat_scratch';
-    const prefix = 'cat_scratch';
+
     playSound('tafel_kratzen_11025.wav');
 
     currentInterval = setInterval(() => {
-        setCatFrame(folder, prefix, frame++);
+        setCatFrame('cat_scratch', 'cat_scratch', frame++);
         if (frame > maxFrames) {
             clearIntervalSafe();
             setIdle();
-            isBusy = false;
+            setTimeout(() => isBusy = false, 300);
             if (onFinish) onFinish();
         }
     }, 60);
 }
 
+/* -------------------------------------------------
+   HITBOXES: PIES + PANZA
+------------------------------------------------- */
 cat.addEventListener('click', e => {
+    if (isBusy) return;
+
     const rect = cat.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    if (y > rect.height * 0.75) {
-        const side = x < rect.width / 2 ? 'left' : 'right';
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    /* 🦶 PIES
+       Zona pequeña abajo
+       (último ~22%)
+    */
+    if (y > 0.78) {
+        const side = x < 0.5 ? 'left' : 'right';
         playFoot(side);
+        return;
+    }
+
+    /* 🫃 PANZA
+       Más larga verticalmente
+       Desde pecho hasta antes de los pies
+    */
+    if (
+        x > 0.25 && x < 0.75 &&
+        y > 0.30 && y <= 0.78
+    ) {
+        playBelly();
     }
 });
 
+
+
+/* -------------------------------------------------
+   PIES
+------------------------------------------------- */
 function playFoot(side) {
-    const sound = Math.random() > 0.5 ? 'p_foot3_11025.wav' : 'p_foot4_11025.wav';
+    const sound = Math.random() > 0.5
+        ? 'p_foot3_11025.wav'
+        : 'p_foot4_11025.wav';
+
     playSound(sound);
     playFootAnimation(side);
 }
@@ -113,21 +157,49 @@ function playFoot(side) {
 function playFootAnimation(side) {
     let frame = 0;
     const maxFrames = 29;
-    const folder = `foot_${side}`;
-    const prefix = `cat_foot_${side}`;
+
     clearIntervalSafe();
     isBusy = true;
 
     currentInterval = setInterval(() => {
-        setCatFrame(folder, prefix, frame++);
+        setCatFrame(`foot_${side}`, `cat_foot_${side}`, frame++);
         if (frame > maxFrames) {
             clearIntervalSafe();
             setIdle();
-            isBusy = false;
+            setTimeout(() => isBusy = false, 300);
         }
     }, 60);
 }
 
+/* -------------------------------------------------
+   PANZA
+------------------------------------------------- */
+function playBelly() {
+    clearIntervalSafe();
+    isBusy = true;
+
+    const sound = Math.random() > 0.5
+        ? 'p_belly1_11025.wav'
+        : 'p_belly2_11025.wav';
+
+    playSound(sound);
+
+    let frame = 0;
+    const maxFrames = 33;
+
+    currentInterval = setInterval(() => {
+        setCatFrame('cat_stomach', 'cat_stomach', frame++);
+        if (frame > maxFrames) {
+            clearIntervalSafe();
+            setIdle();
+            setTimeout(() => isBusy = false, 400);
+        }
+    }, 60);
+}
+
+/* -------------------------------------------------
+   ESCUCHAR / HABLAR
+------------------------------------------------- */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const analyser = audioCtx.createAnalyser();
 
@@ -145,6 +217,7 @@ function listenLoop() {
 
     const data = new Uint8Array(analyser.fftSize);
     analyser.getByteTimeDomainData(data);
+
     const volume = data.reduce((a, b) => a + Math.abs(b - 128), 0);
 
     if (volume > 1500) {
@@ -160,6 +233,7 @@ function listenLoop() {
 function playListen(onFinish) {
     let frame = 0;
     clearIntervalSafe();
+
     currentInterval = setInterval(() => {
         setCatFrame('listen', 'cat_listen', frame++);
         if (frame > 5) {
@@ -181,6 +255,7 @@ function recordAndRepeat() {
             const audio = new Audio(URL.createObjectURL(blob));
             audio.playbackRate = 1.4;
             audio.play();
+
             playTalkWhileAudio(audio, () => {
                 setIdle();
                 setTimeout(() => isBusy = false, cooldownTime);
@@ -195,8 +270,6 @@ function recordAndRepeat() {
 function playTalkWhileAudio(audio, onFinish) {
     let frame = 0;
     clearIntervalSafe();
-    const previousBusy = isBusy;
-    isBusy = false;
 
     currentInterval = setInterval(() => {
         setCatFrame('talk', 'cat_talk', frame % 16);
@@ -205,14 +278,18 @@ function playTalkWhileAudio(audio, onFinish) {
 
     audio.onended = () => {
         clearIntervalSafe();
-        isBusy = previousBusy;
-        setTimeout(() => isBusy = false, 200);
+        setIdle();
+        setTimeout(() => isBusy = false, 300);
         if (onFinish) onFinish();
     };
 }
 
+/* -------------------------------------------------
+   GRABACIÓN
+------------------------------------------------- */
 recBtn.addEventListener('click', async () => {
     if (isRecording) return;
+
     recBtn.disabled = true;
     recordedChunks = [];
 
@@ -221,7 +298,10 @@ recBtn.addEventListener('click', async () => {
         const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioStream.getAudioTracks().forEach(track => videoStream.addTrack(track));
 
-        mediaRecorder = new MediaRecorder(videoStream, { mimeType: 'video/webm; codecs=vp8,opus' });
+        mediaRecorder = new MediaRecorder(videoStream, {
+            mimeType: 'video/webm; codecs=vp8,opus'
+        });
+
         mediaRecorder.ondataavailable = e => {
             if (e.data.size > 0) recordedChunks.push(e.data);
         };
@@ -230,17 +310,16 @@ recBtn.addEventListener('click', async () => {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
 
             if (window.showSaveFilePicker) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: 'talking_tune.webm',
-                        types: [{ description: 'Video WebM', accept: { 'video/webm': ['.webm'] } }]
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(blob);
-                    await writable.close();
-                } catch (err) {
-                    console.error('Guardado cancelado o error:', err);
-                }
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: 'talking_tune.webm',
+                    types: [{
+                        description: 'Video WebM',
+                        accept: { 'video/webm': ['.webm'] }
+                    }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
             } else {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -270,6 +349,9 @@ recBtn.addEventListener('click', async () => {
     }
 });
 
+/* -------------------------------------------------
+   DIBUJAR ESCENA
+------------------------------------------------- */
 function drawSceneOnCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -289,4 +371,7 @@ function drawSceneOnCanvas() {
     ctx.drawImage(imgCat, 0, 0, canvas.width, canvas.height);
 }
 
+/* -------------------------------------------------
+   INIT
+------------------------------------------------- */
 setIdle();
